@@ -1,0 +1,7 @@
+default: Pluto_Calibration
+build_dir: C:/Users/Public/Documents/Pluto_Calibration/build
+domains:
+  - name: Pluto_Calibration
+    build_dir: C:/Users/Public/Documents/Pluto_Calibration/build/Pluto_Calibration
+flash_order:
+  - Pluto_Calibration

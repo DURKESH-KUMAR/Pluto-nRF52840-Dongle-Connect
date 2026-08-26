@@ -1,0 +1,13 @@
+# Target labels
+ Pluto_Calibration
+# Source files and their labels
+C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/CMakeFiles/Pluto_Calibration
+C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/CMakeFiles/Pluto_Calibration.rule
+C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/CMakeFiles/Pluto_Calibration-complete.rule
+C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/Pluto_Calibration-prefix/src/Pluto_Calibration-stamp/Pluto_Calibration-build.rule
+C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/Pluto_Calibration-prefix/src/Pluto_Calibration-stamp/Pluto_Calibration-configure.rule
+C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/Pluto_Calibration-prefix/src/Pluto_Calibration-stamp/Pluto_Calibration-download.rule
+C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/Pluto_Calibration-prefix/src/Pluto_Calibration-stamp/Pluto_Calibration-install.rule
+C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/Pluto_Calibration-prefix/src/Pluto_Calibration-stamp/Pluto_Calibration-mkdir.rule
+C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/Pluto_Calibration-prefix/src/Pluto_Calibration-stamp/Pluto_Calibration-patch.rule
+C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/Pluto_Calibration-prefix/src/Pluto_Calibration-stamp/Pluto_Calibration-update.rule
