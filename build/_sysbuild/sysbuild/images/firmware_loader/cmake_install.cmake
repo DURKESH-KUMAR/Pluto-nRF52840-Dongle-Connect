@@ -35,6 +35,6 @@ endif()
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/firmware_loader/install_local_manifest.txt"
+  file(WRITE "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/firmware_loader/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

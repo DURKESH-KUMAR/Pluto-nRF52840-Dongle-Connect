@@ -1,516 +1,405 @@
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
-
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/gatt.h>
-
+#include <zephyr/bluetooth/hci.h>
+#include <zephyr/settings/settings.h>
 #include <string.h>
 
-
 /*
  * ============================================================
- * PLUTO UUIDs
+ * Pluto configuration discovered from your PC inspection
  * ============================================================
  *
- * Pluto service:
+ * Device:
+ *     PLEXO-89FE-g2
  *
- * 594a34fc-31db-11ea-978f-2e728ce88125
+ * Service:
+ *     0000180F-0000-1000-8000-00805F9B34FB
  *
  * Characteristic:
- *
- * 594a36e6-31db-11ea-978f-2e728ce88125
- *
- * Characteristic:
- *
- * 594a3010-31db-11ea-978f-2e728ce88125
- */
-
-
-/*
- * Pluto custom service
- */
-#define PLUTO_SERVICE_UUID \
-	BT_UUID_DECLARE_128( \
-		BT_UUID_128_ENCODE( \
-			0x594a34fc, \
-			0x31db, \
-			0x11ea, \
-			0x978f, \
-			0x2e728ce88125ULL))
-
-
-/*
- * Pluto characteristic 1
+ *     00002A19-0000-1000-8000-00805F9B34FB
  *
  * Properties:
- * indicate, write
- */
-#define PLUTO_CHAR_INDICATE_UUID \
-	BT_UUID_DECLARE_128( \
-		BT_UUID_128_ENCODE( \
-			0x594a36e6, \
-			0x31db, \
-			0x11ea, \
-			0x978f, \
-			0x2e728ce88125ULL))
-
-
-/*
- * Pluto characteristic 2
+ *     READ + NOTIFY
  *
- * Properties:
- * write, write without response
+ * This is the standard Battery Service / Battery Level
+ * characteristic.
  */
-#define PLUTO_CHAR_WRITE_UUID \
-	BT_UUID_DECLARE_128( \
-		BT_UUID_128_ENCODE( \
-			0x594a3010, \
-			0x31db, \
-			0x11ea, \
-			0x978f, \
-			0x2e728ce88125ULL))
 
+#define PLUTO_NAME              "PLEXO-89FE-g2"
+
+#define PLUTO_SERVICE_UUID      BT_UUID_16_ENCODE(0x180F)
+#define PLUTO_BATTERY_UUID      BT_UUID_16_ENCODE(0x2A19)
 
 /*
- * ============================================================
- * Global variables
- * ============================================================
+ * Rescan delay.
  */
+#define SCAN_RETRY_MS           1000
 
-static struct bt_conn *pluto_conn;
+/*
+ * Delay before retrying after disconnect.
+ */
+#define RECONNECT_DELAY_MS      1000
+
+
+/* ============================================================
+ * Global state
+ * ============================================================ */
+
+static struct bt_conn *default_conn;
+
+static bool scanning;
+static bool connected;
+static bool service_found;
+static bool characteristic_found;
+static bool subscribed;
+
+
+/* ============================================================
+ * GATT UUIDs
+ * ============================================================ */
+
+static struct bt_uuid_16 pluto_service_uuid =
+	BT_UUID_INIT_16(0x180F);
+
+static struct bt_uuid_16 pluto_battery_uuid =
+	BT_UUID_INIT_16(0x2A19);
+
+
+/* ============================================================
+ * Discovery state
+ * ============================================================ */
 
 static struct bt_gatt_discover_params discover_params;
 
-static uint16_t pluto_service_start;
-static uint16_t pluto_service_end;
+static uint16_t service_start_handle;
+static uint16_t service_end_handle;
 
-static uint16_t pluto_indicate_handle;
-static uint16_t pluto_write_handle;
+static uint16_t battery_value_handle;
 
 
-/*
- * ============================================================
+/* ============================================================
+ * Subscription
+ * ============================================================ */
+
+static struct bt_gatt_subscribe_params subscribe_params;
+
+
+/* ============================================================
  * Forward declarations
- * ============================================================
- */
+ * ============================================================ */
 
-static void start_scanning(void);
+static void start_scan(void);
+
+static uint8_t discover_service(
+	struct bt_conn *conn,
+	const struct bt_gatt_attr *attr,
+	struct bt_gatt_discover_params *params
+);
+
+static uint8_t discover_battery_characteristic(
+	struct bt_conn *conn,
+	const struct bt_gatt_attr *attr,
+	struct bt_gatt_discover_params *params
+);
+
+static uint8_t pluto_notify(
+	struct bt_conn *conn,
+	struct bt_gatt_subscribe_params *params,
+	const void *data,
+	uint16_t length
+);
+
+static void subscribe_complete(
+	struct bt_conn *conn,
+	uint8_t err,
+	struct bt_gatt_subscribe_params *params
+);
 
 
-/*
- * ============================================================
- * UUID helper
- * ============================================================
- */
+/* ============================================================
+ * Utility
+ * ============================================================ */
 
-static bool uuid_is_pluto_service(const struct bt_uuid *uuid)
+static void print_hex(
+	const uint8_t *data,
+	uint16_t length
+)
 {
-	if (!uuid) {
-		return false;
-	}
+	for (uint16_t i = 0; i < length; i++) {
+		printk("%02X", data[i]);
 
-	return bt_uuid_cmp(uuid, PLUTO_SERVICE_UUID) == 0;
+		if (i + 1 < length) {
+			printk(" ");
+		}
+	}
 }
 
 
-/*
- * ============================================================
- * Advertisement parser
- * ============================================================
- */
+/* ============================================================
+ * BLE scan callback
+ * ============================================================ */
 
-static bool parse_advertisement(struct net_buf_simple *ad)
+static void device_found(
+	const bt_addr_le_t *addr,
+	int8_t rssi,
+	uint8_t type,
+	struct net_buf_simple *ad
+)
 {
-	struct net_buf_simple_state state;
+	char addr_str[BT_ADDR_LE_STR_LEN];
 
+	if (scanning == false) {
+		return;
+	}
+
+	/*
+	 * Ignore non-connectable advertisements.
+	 */
+	if (type != BT_GAP_ADV_TYPE_ADV_IND &&
+	    type != BT_GAP_ADV_TYPE_ADV_DIRECT_IND &&
+	    type != BT_GAP_ADV_TYPE_EXT_ADV) {
+		return;
+	}
+
+	bt_addr_le_to_str(
+		addr,
+		addr_str,
+		sizeof(addr_str)
+	);
+
+	/*
+	 * Parse advertisement data for the device name.
+	 */
+	struct net_buf_simple_state state;
 	net_buf_simple_save(ad, &state);
 
 	while (ad->len > 1) {
 
-		uint8_t length;
+		uint8_t field_len = net_buf_simple_pull_u8(ad);
 
-		length = net_buf_simple_pull_u8(ad);
-
-		if (length == 0) {
+		if (field_len == 0 ||
+		    field_len > ad->len) {
 			break;
 		}
 
-		if (length > ad->len) {
-			break;
-		}
+		uint8_t field_type =
+			net_buf_simple_pull_u8(ad);
 
-		uint8_t type;
+		uint8_t data_len = field_len - 1;
 
-		type = net_buf_simple_pull_u8(ad);
+		if (field_type == BT_DATA_NAME_COMPLETE ||
+		    field_type == BT_DATA_NAME_SHORTENED) {
 
-		/*
-		 * Look for 128-bit service UUID.
-		 */
-		if (type == BT_DATA_UUID128_ALL ||
-		    type == BT_DATA_UUID128_SOME) {
+			char name[32];
 
-			while (ad->len >= 16) {
+			size_t copy_len =
+				MIN(data_len, sizeof(name) - 1);
 
-				const uint8_t *uuid_data;
+			memcpy(
+				name,
+				ad->data,
+				copy_len
+			);
 
-				uuid_data = ad->data;
+			name[copy_len] = '\0';
+
+			if (strcmp(name, PLUTO_NAME) == 0) {
+
+				printk("\n");
+				printk("========================================\n");
+				printk("PLUTO FOUND\n");
+				printk("========================================\n");
+
+				printk(
+					"Name : %s\n",
+					name
+				);
+
+				printk(
+					"Addr : %s\n",
+					addr_str
+				);
+
+				printk(
+					"RSSI : %d dBm\n",
+					rssi
+				);
 
 				/*
-				 * BLE UUID is transmitted
-				 * little endian.
-				 *
-				 * Pluto:
-				 *
-				 * 594a34fc-31db-11ea-
-				 * 978f-2e728ce88125
+				 * Stop scanning before connecting.
 				 */
-				static const uint8_t pluto_uuid[16] = {
-					0x25,
-					0x81,
-					0xCE,
-					0x8C,
-					0x72,
-					0x2E,
-					0x8F,
-					0x97,
-					0xEA,
-					0x11,
-					0xDB,
-					0x31,
-					0xFC,
-					0x34,
-					0x4A,
-					0x59
-				};
+				int err =
+					bt_le_scan_stop();
 
-				if (memcmp(uuid_data,
-					   pluto_uuid,
-					   sizeof(pluto_uuid)) == 0) {
+				if (err) {
 
-					net_buf_simple_restore(
-						ad,
-						&state);
+					printk(
+						"Scan stop failed: %d\n",
+						err
+					);
 
-					return true;
+					return;
 				}
 
-				net_buf_simple_pull(ad, 16);
+				scanning = false;
+
+				printk(
+					"Connecting to Pluto...\n"
+				);
+
+				err =
+					bt_conn_le_create(
+						addr,
+						BT_CONN_LE_CREATE_CONN,
+						BT_LE_CONN_PARAM_DEFAULT,
+						&default_conn
+					);
+
+				if (err) {
+
+					printk(
+						"Connection create failed: %d\n",
+						err
+					);
+
+					default_conn = NULL;
+
+					k_msleep(
+						RECONNECT_DELAY_MS
+					);
+
+					start_scan();
+				}
+
+				break;
 			}
 		}
+
+		net_buf_simple_pull(
+			ad,
+			data_len
+		);
 	}
 
 	net_buf_simple_restore(ad, &state);
-
-	return false;
 }
 
 
-/*
- * ============================================================
- * Scan callback
- * ============================================================
- */
-
-static void scan_recv(const struct bt_le_scan_recv_info *info,
-		      struct net_buf_simple *ad)
-{
-	char addr[BT_ADDR_LE_STR_LEN];
-
-	bt_addr_le_to_str(
-		info->addr,
-		addr,
-		sizeof(addr));
-
-	printk(
-		"BLE DEVICE: %s  RSSI: %d\n",
-		addr,
-		info->rssi);
-
-	/*
-	 * Check advertisement for Pluto service.
-	 */
-	if (!parse_advertisement(ad)) {
-		return;
-	}
-
-	printk("\n");
-	printk("========================================\n");
-	printk("       PLUTO DEVICE FOUND!\n");
-	printk("========================================\n");
-
-	printk("Address : %s\n", addr);
-	printk("RSSI    : %d dBm\n", info->rssi);
-
-	printk("Pluto Service UUID detected.\n");
-
-	/*
-	 * Stop scanning.
-	 */
-	int err = bt_le_scan_stop();
-
-	if (err) {
-
-		printk(
-			"Failed to stop scanning: %d\n",
-			err);
-
-		return;
-	}
-
-	/*
-	 * Connect to Pluto.
-	 */
-	printk("Connecting to Pluto...\n");
-
-	err = bt_conn_le_create(
-		info->addr,
-		BT_CONN_LE_CREATE_CONN,
-		BT_LE_CONN_PARAM_DEFAULT,
-		&pluto_conn);
-
-	if (err) {
-
-		printk(
-			"Connection creation failed: %d\n",
-			err);
-
-		pluto_conn = NULL;
-
-		start_scanning();
-	}
-}
-
-
-/*
- * ============================================================
- * Scan callback structure
- * ============================================================
- */
-
-static struct bt_le_scan_cb scan_cb = {
-	.recv = scan_recv,
-};
-
-
-/*
- * ============================================================
+/* ============================================================
  * Start scanning
- * ============================================================
- */
+ * ============================================================ */
 
-static void start_scanning(void)
+static void start_scan(void)
 {
 	int err;
 
+	if (scanning) {
+		return;
+	}
+
+	if (connected) {
+		return;
+	}
+
 	printk("\n");
 	printk("========================================\n");
-	printk("       SCANNING FOR PLUTO\n");
+	printk("SCANNING FOR PLUTO\n");
 	printk("========================================\n");
 
 	err = bt_le_scan_start(
 		BT_LE_SCAN_ACTIVE,
-		NULL);
+		device_found
+	);
 
-	if (err) {
+	if (err == 0) {
+
+		scanning = true;
 
 		printk(
-			"Scanning failed: %d\n",
-			err);
+			"Scanner started successfully.\n"
+		);
 
 		return;
 	}
 
-	printk("BLE scanning started.\n");
+	printk(
+		"Scan start failed: %d\n",
+		err
+	);
+
+	k_msleep(
+		SCAN_RETRY_MS
+	);
 }
 
 
-/*
- * ============================================================
- * GATT discovery callback
- * ============================================================
- */
+/* ============================================================
+ * Connection callbacks
+ * ============================================================ */
 
-static uint8_t discovery_func(
+static void connected_cb(
 	struct bt_conn *conn,
-	const struct bt_gatt_attr *attr,
-	struct bt_gatt_discover_params *params)
+	uint8_t err
+)
 {
-	if (!attr) {
+	if (err) {
 
-		printk("\n");
-		printk("GATT discovery complete.\n");
+		printk(
+			"\nPLUTO CONNECTION FAILED: %u\n",
+			err
+		);
 
-		memset(
-			params,
-			0,
-			sizeof(*params));
+		if (default_conn) {
 
-		return BT_GATT_ITER_STOP;
+			bt_conn_unref(
+				default_conn
+			);
+
+			default_conn = NULL;
+		}
+
+		connected = false;
+
+		k_msleep(
+			RECONNECT_DELAY_MS
+		);
+
+		start_scan();
+
+		return;
 	}
 
-
-	/*
-	 * Primary service found.
-	 */
-	if (params->type == BT_GATT_DISCOVER_PRIMARY) {
-
-		struct bt_gatt_service_val *service;
-
-		service = (struct bt_gatt_service_val *)
-			attr->user_data;
-
-		printk("\n");
-		printk("SERVICE FOUND\n");
-
-		printk(
-			"Handle start : %u\n",
-			attr->handle);
-
-		printk(
-			"UUID         : ");
-
-		if (service->uuid->type ==
-		    BT_UUID_TYPE_128) {
-
-			printk(
-				"%s\n",
-				"128-bit UUID");
-
-		} else {
-
-			printk(
-				"non-128-bit UUID\n");
-		}
-
-		/*
-		 * Check for Pluto service.
-		 */
-		if (uuid_is_pluto_service(
-			service->uuid)) {
-
-			printk("\n");
-			printk(
-				"********************************\n");
-
-			printk(
-				"PLUTO SERVICE FOUND!\n");
-
-			printk(
-				"Service Handle: %u\n",
-				attr->handle);
-
-			printk(
-				"********************************\n");
-
-			pluto_service_start =
-				attr->handle;
-
-			/*
-			 * The end handle will be discovered
-			 * when the next primary service is
-			 * found.
-			 */
-		}
-
-		return BT_GATT_ITER_CONTINUE;
-	}
-
-
-	/*
-	 * Characteristic discovery.
-	 */
-	if (params->type ==
-	    BT_GATT_DISCOVER_CHARACTERISTIC) {
-
-		const struct bt_gatt_chrc *chrc;
-
-		chrc = attr->user_data;
-
-		printk("\n");
-		printk("CHARACTERISTIC FOUND\n");
-
-		printk(
-			"Declaration handle : %u\n",
-			attr->handle);
-
-		printk(
-			"Value handle       : %u\n",
-			chrc->value_handle);
-
-		printk(
-			"Properties         : 0x%02x\n",
-			chrc->properties);
-
-		/*
-		 * Check indication/write characteristic.
-		 */
-		if (bt_uuid_cmp(
-			chrc->uuid,
-			PLUTO_CHAR_INDICATE_UUID) == 0) {
-
-			pluto_indicate_handle =
-				chrc->value_handle;
-
-			printk(
-				"*** PLUTO INDICATE CHARACTERISTIC ***\n");
-
-			printk(
-				"Handle: %u\n",
-				pluto_indicate_handle);
-		}
-
-
-		/*
-		 * Check write characteristic.
-		 */
-		if (bt_uuid_cmp(
-			chrc->uuid,
-			PLUTO_CHAR_WRITE_UUID) == 0) {
-
-			pluto_write_handle =
-				chrc->value_handle;
-
-			printk(
-				"*** PLUTO WRITE CHARACTERISTIC ***\n");
-
-			printk(
-				"Handle: %u\n",
-				pluto_write_handle);
-		}
-
-		return BT_GATT_ITER_CONTINUE;
-	}
-
-
-	return BT_GATT_ITER_CONTINUE;
-}
-
-
-/*
- * ============================================================
- * Start GATT discovery
- * ============================================================
- */
-
-static void start_gatt_discovery(struct bt_conn *conn)
-{
 	printk("\n");
 	printk("========================================\n");
-	printk("       STARTING GATT DISCOVERY\n");
+	printk("PLUTO CONNECTED\n");
 	printk("========================================\n");
+
+	connected = true;
+
+	default_conn = bt_conn_ref(conn);
+
+	printk(
+		"Connection successful.\n"
+	);
+
+	printk(
+		"Starting GATT service discovery...\n"
+	);
 
 	memset(
 		&discover_params,
 		0,
-		sizeof(discover_params));
+		sizeof(discover_params)
+	);
 
 	discover_params.uuid =
-		BT_UUID_DECLARE_16(
-			BT_UUID_GATT_PRIMARY_VAL);
+		&pluto_service_uuid.uuid;
 
 	discover_params.func =
-		discovery_func;
+		discover_service;
 
 	discover_params.start_handle =
 		BT_ATT_FIRST_ATTRIBUTE_HANDLE;
@@ -521,195 +410,471 @@ static void start_gatt_discovery(struct bt_conn *conn)
 	discover_params.type =
 		BT_GATT_DISCOVER_PRIMARY;
 
-	int err = bt_gatt_discover(
+	err = bt_gatt_discover(
 		conn,
-		&discover_params);
+		&discover_params
+	);
 
 	if (err) {
 
 		printk(
-			"GATT discovery failed: %d\n",
-			err);
+			"Service discovery failed: %d\n",
+			err
+		);
 	}
 }
 
 
-/*
- * ============================================================
- * Connected callback
- * ============================================================
- */
-
-static void connected(
+static void disconnected_cb(
 	struct bt_conn *conn,
-	uint8_t err)
-{
-	if (err) {
-
-		printk("\n");
-		printk("========================================\n");
-		printk("       PLUTO CONNECTION FAILED\n");
-		printk("========================================\n");
-
-		printk(
-			"Error: %u\n",
-			err);
-
-		if (pluto_conn) {
-
-			bt_conn_unref(
-				pluto_conn);
-
-			pluto_conn = NULL;
-		}
-
-		start_scanning();
-
-		return;
-	}
-
-
-	printk("\n");
-	printk("========================================\n");
-	printk("       PLUTO CONNECTED!\n");
-	printk("========================================\n");
-
-
-	if (!pluto_conn) {
-
-		pluto_conn =
-			bt_conn_ref(conn);
-	}
-
-
-	/*
-	 * Reset discovered handles.
-	 */
-	pluto_service_start = 0;
-	pluto_service_end = 0;
-
-	pluto_indicate_handle = 0;
-	pluto_write_handle = 0;
-
-
-	/*
-	 * Start GATT discovery.
-	 */
-	start_gatt_discovery(conn);
-}
-
-
-/*
- * ============================================================
- * Disconnected callback
- * ============================================================
- */
-
-static void disconnected(
-	struct bt_conn *conn,
-	uint8_t reason)
+	uint8_t reason
+)
 {
 	printk("\n");
 	printk("========================================\n");
-	printk("       PLUTO DISCONNECTED\n");
+	printk("PLUTO DISCONNECTED\n");
 	printk("========================================\n");
 
 	printk(
 		"Reason: 0x%02X\n",
-		reason);
+		reason
+	);
 
+	connected = false;
+	service_found = false;
+	characteristic_found = false;
+	subscribed = false;
 
-	if (pluto_conn) {
+	memset(
+		&subscribe_params,
+		0,
+		sizeof(subscribe_params)
+	);
+
+	if (default_conn) {
 
 		bt_conn_unref(
-			pluto_conn);
+			default_conn
+		);
 
-		pluto_conn = NULL;
+		default_conn = NULL;
 	}
 
+	printk(
+		"Restarting scan...\n"
+	);
 
-	printk("Restarting scan...\n");
+	k_msleep(
+		RECONNECT_DELAY_MS
+	);
 
-	k_sleep(K_MSEC(500));
-
-	start_scanning();
+	start_scan();
 }
 
 
-/*
- * ============================================================
- * Connection callbacks
- * ============================================================
- */
-
-BT_CONN_CB_DEFINE(pluto_connection_callbacks) = {
-
-	.connected = connected,
-
-	.disconnected = disconnected,
+BT_CONN_CB_DEFINE(conn_callbacks) = {
+	.connected = connected_cb,
+	.disconnected = disconnected_cb,
 };
 
 
-/*
- * ============================================================
- * Main
- * ============================================================
- */
+/* ============================================================
+ * Service discovery
+ * ============================================================ */
 
-int main(void)
+static uint8_t discover_service(
+	struct bt_conn *conn,
+	const struct bt_gatt_attr *attr,
+	struct bt_gatt_discover_params *params
+)
 {
-	int err;
+	if (attr == NULL) {
 
+		printk(
+			"Pluto Battery Service not found.\n"
+		);
 
-	printk("\n\n");
+		return BT_GATT_ITER_STOP;
+	}
 
+	const struct bt_gatt_service_val *service =
+		attr->user_data;
+
+	service_start_handle =
+		attr->handle + 1;
+
+	service_end_handle =
+		service->end_handle;
+
+	service_found = true;
+
+	printk("\n");
 	printk("========================================\n");
-	printk("        PLUTO nRF52840 RECEIVER\n");
+	printk("PLUTO SERVICE FOUND\n");
 	printk("========================================\n");
 
-	printk("Firmware starting...\n");
+	printk(
+		"Service UUID : 0x180F\n"
+	);
+
+	printk(
+		"Start handle : %u\n",
+		service_start_handle
+	);
+
+	printk(
+		"End handle   : %u\n",
+		service_end_handle
+	);
 
 
 	/*
-	 * Initialize Bluetooth.
+	 * Now discover the Battery Level characteristic.
 	 */
-	err = bt_enable(NULL);
+
+	memset(
+		&discover_params,
+		0,
+		sizeof(discover_params)
+	);
+
+	discover_params.uuid =
+		&pluto_battery_uuid.uuid;
+
+	discover_params.func =
+		discover_battery_characteristic;
+
+	discover_params.start_handle =
+		service_start_handle;
+
+	discover_params.end_handle =
+		service_end_handle;
+
+	discover_params.type =
+		BT_GATT_DISCOVER_CHARACTERISTIC;
+
+	int err =
+		bt_gatt_discover(
+			conn,
+			&discover_params
+		);
 
 	if (err) {
 
 		printk(
-			"Bluetooth initialization FAILED: %d\n",
-			err);
+			"Characteristic discovery failed: %d\n",
+			err
+		);
+	}
+
+	return BT_GATT_ITER_STOP;
+}
+
+
+/* ============================================================
+ * Battery characteristic discovery
+ * ============================================================ */
+
+static uint8_t discover_battery_characteristic(
+	struct bt_conn *conn,
+	const struct bt_gatt_attr *attr,
+	struct bt_gatt_discover_params *params
+)
+{
+	if (attr == NULL) {
+
+		printk(
+			"Battery Level characteristic not found.\n"
+		);
+
+		return BT_GATT_ITER_STOP;
+	}
+
+	const struct bt_gatt_chrc *chrc =
+		attr->user_data;
+
+	battery_value_handle =
+		chrc->value_handle;
+
+	characteristic_found = true;
+
+	printk("\n");
+	printk("========================================\n");
+	printk("BATTERY CHARACTERISTIC FOUND\n");
+	printk("========================================\n");
+
+	printk(
+		"UUID          : 0x2A19\n"
+	);
+
+	printk(
+		"Value handle  : %u\n",
+		battery_value_handle
+	);
+
+	printk(
+		"Properties    : 0x%02X\n",
+		chrc->properties
+	);
+
+	printk(
+		"Subscribing to notifications...\n"
+	);
+
+
+	/*
+	 * Let Zephyr discover the CCC descriptor automatically.
+	 */
+	memset(
+		&subscribe_params,
+		0,
+		sizeof(subscribe_params)
+	);
+
+	subscribe_params.notify =
+		pluto_notify;
+
+	subscribe_params.subscribe =
+		subscribe_complete;
+
+	subscribe_params.value_handle =
+		battery_value_handle;
+
+	subscribe_params.ccc_handle =
+		BT_GATT_AUTO_DISCOVER_CCC_HANDLE;
+
+	subscribe_params.value =
+		BT_GATT_CCC_NOTIFY;
+
+
+	int err =
+		bt_gatt_subscribe(
+			conn,
+			&subscribe_params
+		);
+
+	if (err) {
+
+		printk(
+			"Subscribe failed: %d\n",
+			err
+		);
+
+		return BT_GATT_ITER_STOP;
+	}
+
+	printk(
+		"Subscription request sent.\n"
+	);
+
+	return BT_GATT_ITER_STOP;
+}
+
+
+/* ============================================================
+ * Subscription complete
+ * ============================================================ */
+
+static void subscribe_complete(
+	struct bt_conn *conn,
+	uint8_t err,
+	struct bt_gatt_subscribe_params *params
+)
+{
+	if (err) {
+
+		printk("\n");
+		printk(
+			"PLUTO SUBSCRIPTION FAILED: %u\n",
+			err
+		);
+
+		subscribed = false;
+
+		return;
+	}
+
+	subscribed = true;
+
+	printk("\n");
+	printk("========================================\n");
+	printk("PLUTO DATA STREAM ACTIVE\n");
+	printk("========================================\n");
+
+	printk(
+		"Battery Level notifications enabled.\n"
+	);
+
+	printk(
+		"Value handle : %u\n",
+		params->value_handle
+	);
+
+	printk(
+		"CCC handle   : %u\n",
+		params->ccc_handle
+	);
+}
+
+
+/* ============================================================
+ * Notification callback
+ * ============================================================ */
+
+static uint8_t pluto_notify(
+	struct bt_conn *conn,
+	struct bt_gatt_subscribe_params *params,
+	const void *data,
+	uint16_t length
+)
+{
+	if (data == NULL) {
+
+		printk(
+			"PLUTO notification subscription removed.\n"
+		);
+
+		subscribed = false;
+
+		return BT_GATT_ITER_STOP;
+	}
+
+	printk(
+		"PLUTO_RX length=%u data=",
+		length
+	);
+
+	print_hex(
+		data,
+		length
+	);
+
+	printk("\n");
+
+
+	/*
+	 * Battery Level is one byte.
+	 */
+	if (length >= 1) {
+
+		const uint8_t battery =
+			((const uint8_t *)data)[0];
+
+		printk(
+			"PLUTO_BATTERY=%u%%\n",
+			battery
+		);
+	}
+
+	return BT_GATT_ITER_CONTINUE;
+}
+
+
+/* ============================================================
+ * Bluetooth initialization
+ * ============================================================ */
+
+static void bt_ready(int err)
+{
+	if (err) {
+
+		printk(
+			"Bluetooth initialization failed: %d\n",
+			err
+		);
+
+		return;
+	}
+
+	printk("\n");
+	printk("========================================\n");
+	printk("BLUETOOTH INITIALIZED\n");
+	printk("========================================\n");
+
+	printk(
+		"Target : %s\n",
+		PLUTO_NAME
+	);
+
+	printk(
+		"Service: 0x180F\n"
+	);
+
+	printk(
+		"Data   : 0x2A19\n"
+	);
+
+#if defined(CONFIG_BT_SETTINGS)
+
+	settings_load();
+
+#endif
+
+	start_scan();
+}
+
+
+/* ============================================================
+ * Main
+ * ============================================================ */
+
+int main(void)
+{
+	printk("\n");
+	printk("========================================\n");
+	printk("nRF52840 PLUTO CENTRAL\n");
+	printk("========================================\n");
+
+	printk(
+		"Target device: %s\n",
+		PLUTO_NAME
+	);
+
+	printk(
+		"Battery Service: 0x180F\n"
+	);
+
+	printk(
+		"Battery Level : 0x2A19\n"
+	);
+
+	printk(
+		"Mode: BLE Central\n"
+	);
+
+	printk("\n");
+
+	int err =
+		bt_enable(bt_ready);
+
+	if (err) {
+
+		printk(
+			"Bluetooth enable failed: %d\n",
+			err
+		);
 
 		return 0;
 	}
 
-
-	printk("Bluetooth initialized successfully.\n");
-
-
-	/*
-	 * Register scanner callback.
-	 */
-	bt_le_scan_cb_register(
-		&scan_cb);
-
-
-	printk("Scanner callback registered.\n");
-
-
-	/*
-	 * Start scanning.
-	 */
-	start_scanning();
-
-
 	while (1) {
 
-		k_sleep(
-			K_SECONDS(1));
-	}
+		/*
+		 * Safety net:
+		 *
+		 * If we somehow become disconnected and
+		 * scanning has stopped, restart scanning.
+		 */
 
+		if (!connected && !scanning) {
+
+			start_scan();
+		}
+
+		k_sleep(
+			K_SECONDS(2)
+		);
+	}
 
 	return 0;
 }

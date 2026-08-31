@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/CMakeFiles/Pluto-nRF52840-Dongle-Connect"
+		},
+		{
+			"file" : "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/CMakeFiles/Pluto-nRF52840-Dongle-Connect.rule"
+		},
+		{
+			"file" : "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/CMakeFiles/Pluto-nRF52840-Dongle-Connect-complete.rule"
+		},
+		{
+			"file" : "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-build.rule"
+		},
+		{
+			"file" : "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-configure.rule"
+		},
+		{
+			"file" : "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-download.rule"
+		},
+		{
+			"file" : "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-install.rule"
+		},
+		{
+			"file" : "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-patch.rule"
+		},
+		{
+			"file" : "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"Pluto-nRF52840-Dongle-Connect"
+		],
+		"name" : "Pluto-nRF52840-Dongle-Connect"
+	}
+}

@@ -1,7 +1,7 @@
-default: Pluto_Calibration
-build_dir: C:/Users/Public/Documents/Pluto_Calibration/build
+default: Pluto-nRF52840-Dongle-Connect
+build_dir: C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build
 domains:
-  - name: Pluto_Calibration
-    build_dir: C:/Users/Public/Documents/Pluto_Calibration/build/Pluto_Calibration
+  - name: Pluto-nRF52840-Dongle-Connect
+    build_dir: C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/Pluto-nRF52840-Dongle-Connect
 flash_order:
-  - Pluto_Calibration
+  - Pluto-nRF52840-Dongle-Connect

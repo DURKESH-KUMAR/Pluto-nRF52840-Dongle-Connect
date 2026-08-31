@@ -23,7 +23,7 @@ rule CUSTOM_COMMAND
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = C:\ncs\toolchains\dcbdc366a1\opt\bin\cmake.exe --regenerate-during-build -SC:\ncs\v3.4.0\zephyr\share\sysbuild -BC:\Users\Public\Documents\Pluto_Calibration\build
+  command = C:\ncs\toolchains\dcbdc366a1\opt\bin\cmake.exe --regenerate-during-build -SC:\ncs\v3.4.0\zephyr\share\sysbuild -BC:\Users\Public\Documents\Pluto-nRF52840-Dongle-Connect\build
   description = Re-running CMake...
   generator = 1
 

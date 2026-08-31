@@ -1,0 +1,13 @@
+# Target labels
+ Pluto-nRF52840-Dongle-Connect
+# Source files and their labels
+C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/CMakeFiles/Pluto-nRF52840-Dongle-Connect
+C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/CMakeFiles/Pluto-nRF52840-Dongle-Connect.rule
+C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/CMakeFiles/Pluto-nRF52840-Dongle-Connect-complete.rule
+C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-build.rule
+C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-configure.rule
+C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-download.rule
+C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-install.rule
+C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-mkdir.rule
+C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-patch.rule
+C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/Pluto-nRF52840-Dongle-Connect-prefix/src/Pluto-nRF52840-Dongle-Connect-stamp/Pluto-nRF52840-Dongle-Connect-update.rule

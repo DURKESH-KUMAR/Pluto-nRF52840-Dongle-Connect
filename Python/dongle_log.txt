@@ -1,0 +1,129 @@
+[11:41:04.683] Name : PLEXO-89FE-g2
+[11:41:04.690] [1;31m--- 38 messages dropped ---
+[11:41:04.692] [0mAddr : B4:3A:45:89:74:E2 (public)
+[11:41:04.695] RSSI : -61 dBm
+[11:41:04.695] Connecting to Pluto...
+[11:41:04.698] ========================================
+[11:41:04.699] PLUTO CONNECTED
+[11:41:04.700] ========================================
+[11:41:04.701] Connection successful.
+[11:41:04.701] Starting GATT service discovery...
+[11:41:04.702] [00:00:00.103,485] [0m<inf> udc_nrf: Reset[0m
+[11:41:04.703] [00:00:00.103,546] [0m<inf> udc_nrf: RESUMING from suspend[0m
+[11:41:04.704] [00:00:00.192,718] [0m<inf> udc_nrf: Reset[0m
+[11:41:04.707] ========================================
+[11:41:04.708] PLUTO SERVICE FOUND
+[11:41:04.708] ========================================
+[11:41:04.709] Service UUID : 0x180F
+[11:41:04.710] Start handle : 96
+[11:41:04.710] End handle   : 65535
+[11:41:04.711] ========================================
+[11:41:04.711] BATTERY CHARACTERISTIC FOUND
+[11:41:04.712] ========================================
+[11:41:04.712] UUID          : 0x2A19
+[11:41:04.713] Value handle  : 97
+[11:41:04.713] Properties    : 0x12
+[11:41:04.714] Subscribing to notifications...
+[11:41:04.714] Subscription request sent.
+[11:41:04.715] [00:00:00.438,232] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:41:04.716] [00:00:00.443,084] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:41:04.717] [00:00:00.484,039] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:41:04.718] [00:00:00.489,868] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:41:04.719] PLUTO notification subscription removed.
+[11:41:04.719] PLUTO SUBSCRIPTION FAILED: 1
+[11:41:47.210] [00:00:00.457,244] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:41:47.214] [1;31m--- 38 messages dropped ---
+[11:41:47.218] [0m[00:00:00.481,018] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:41:47.221] [00:00:00.483,032] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:41:47.222] ========================================
+[11:41:47.223] PLUTO FOUND
+[11:41:47.225] ========================================
+[11:41:47.225] Name : PLEXO-89FE-g2
+[11:41:47.226] Addr : B4:3A:45:89:74:E2 (public)
+[11:41:47.227] RSSI : -60 dBm
+[11:41:47.227] Connecting to Pluto...
+[11:41:47.228] ========================================
+[11:41:47.229] PLUTO CONNECTED
+[11:41:47.230] ========================================
+[11:41:47.230] Connection successful.
+[11:41:47.232] Starting GATT service discovery...
+[11:41:47.233] ========================================
+[11:41:47.234] PLUTO SERVICE FOUND
+[11:41:47.235] ========================================
+[11:41:47.235] Service UUID : 0x180F
+[11:41:47.236] Start handle : 96
+[11:41:47.236] End handle   : 65535
+[11:41:47.237] ========================================
+[11:41:47.238] BATTERY CHARACTERISTIC FOUND
+[11:41:47.239] ========================================
+[11:41:47.240] UUID          : 0x2A19
+[11:41:47.240] Value handle  : 97
+[11:41:47.241] Properties    : 0x12
+[11:41:47.241] Subscribing to notifications...
+[11:41:47.242] Subscription request sent.
+[11:41:47.243] PLUTO notification subscription removed.
+[11:41:47.243] PLUTO SUBSCRIPTION FAILED: 1
+[11:42:09.406] [00:00:00.440,063] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:42:09.408] [1;31m--- 38 messages dropped ---
+[11:42:09.413] [0m[00:00:00.465,270] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:42:09.417] [00:00:00.477,416] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:42:09.418] ========================================
+[11:42:09.419] PLUTO FOUND
+[11:42:09.421] ========================================
+[11:42:09.421] Name : PLEXO-89FE-g2
+[11:42:09.422] Addr : B4:3A:45:89:74:E2 (public)
+[11:42:09.423] RSSI : -61 dBm
+[11:42:09.424] Connecting to Pluto...
+[11:42:09.424] ========================================
+[11:42:09.425] PLUTO CONNECTED
+[11:42:09.426] ========================================
+[11:42:09.426] Connection successful.
+[11:42:09.427] Starting GATT service discovery...
+[11:42:09.427] ========================================
+[11:42:09.428] PLUTO SERVICE FOUND
+[11:42:09.428] ========================================
+[11:42:09.429] Service UUID : 0x180F
+[11:42:09.429] Start handle : 96
+[11:42:09.433] End handle   : 65535
+[11:42:09.436] ========================================
+[11:42:09.438] BATTERY CHARACTERISTIC FOUND
+[11:42:09.438] ========================================
+[11:42:09.439] UUID          : 0x2A19
+[11:42:09.439] Value handle  : 97
+[11:42:09.440] Properties    : 0x12
+[11:42:09.440] Subscribing to notifications...
+[11:42:09.441] Subscription request sent.
+[11:42:09.441] PLUTO notification subscription removed.
+[11:42:09.442] PLUTO SUBSCRIPTION FAILED: 1
+[11:42:33.824] [00:00:00.448,608] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:42:33.826] [1;31m--- 38 messages dropped ---
+[11:42:33.829] [0m[00:00:00.477,752] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:42:33.831] [00:00:00.479,949] [1;31m<err> udc: Failed to allocate net_buf 4095, ep 0x80[0m
+[11:42:33.831] ========================================
+[11:42:33.832] PLUTO FOUND
+[11:42:33.832] ========================================
+[11:42:33.833] Name : PLEXO-89FE-g2
+[11:42:33.834] Addr : B4:3A:45:89:74:E2 (public)
+[11:42:33.835] RSSI : -64 dBm
+[11:42:33.836] Connecting to Pluto...
+[11:42:33.837] ========================================
+[11:42:33.838] PLUTO CONNECTED
+[11:42:33.839] ========================================
+[11:42:33.839] Connection successful.
+[11:42:33.840] Starting GATT service discovery...
+[11:42:33.841] ========================================
+[11:42:33.841] PLUTO SERVICE FOUND
+[11:42:33.842] ========================================
+[11:42:33.842] Service UUID : 0x180F
+[11:42:33.843] Start handle : 96
+[11:42:33.843] End handle   : 65535
+[11:42:33.844] ========================================
+[11:42:33.844] BATTERY CHARACTERISTIC FOUND
+[11:42:33.845] ========================================
+[11:42:33.845] UUID          : 0x2A19
+[11:42:33.846] Value handle  : 97
+[11:42:33.846] Properties    : 0x12
+[11:42:33.846] Subscribing to notifications...
+[11:42:33.847] Subscription request sent.
+[11:42:33.847] PLUTO notification subscription removed.
+[11:42:33.848] PLUTO SUBSCRIPTION FAILED: 1

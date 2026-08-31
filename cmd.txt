@@ -1,0 +1,4 @@
+Run:
+Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
+
+west build -b nrf52840dongle/nrf52840 -d build --pristine 

@@ -1,0 +1,53 @@
+cmake:
+  application:
+    configuration-dir: 'C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect'
+    source-dir: 'C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect'
+  board:
+    name: 'nrf52840dongle'
+    path:
+     - 'C:/ncs/v3.4.0/zephyr/boards/nordic/nrf52840dongle'
+    qualifiers: 'nrf52840'
+    revision: ''
+  devicetree:
+    bindings-dirs:
+     - 'C:/ncs/v3.4.0/nrf/dts/bindings'
+     - 'C:/ncs/v3.4.0/zephyr/dts/bindings'
+    files:
+     - 'C:/ncs/v3.4.0/zephyr/boards/nordic/nrf52840dongle/nrf52840dongle_nrf52840.dts'
+    include-dirs:
+     - 'C:/ncs/v3.4.0/nrf/include'
+     - 'C:/ncs/v3.4.0/nrf/dts/common'
+     - 'C:/ncs/v3.4.0/nrf/dts/riscv'
+     - 'C:/ncs/v3.4.0/nrf/dts/arm'
+     - 'C:/ncs/v3.4.0/nrf/dts'
+     - 'C:/ncs/v3.4.0/zephyr/include'
+     - 'C:/ncs/v3.4.0/zephyr/include/zephyr'
+     - 'C:/ncs/v3.4.0/zephyr/dts/common'
+     - 'C:/ncs/v3.4.0/zephyr/dts/vendor'
+     - 'C:/ncs/v3.4.0/zephyr/dts/rx'
+     - 'C:/ncs/v3.4.0/zephyr/dts/x86'
+     - 'C:/ncs/v3.4.0/zephyr/dts/xtensa'
+     - 'C:/ncs/v3.4.0/zephyr/dts/sparc'
+     - 'C:/ncs/v3.4.0/zephyr/dts/riscv'
+     - 'C:/ncs/v3.4.0/zephyr/dts/posix'
+     - 'C:/ncs/v3.4.0/zephyr/dts/arm64'
+     - 'C:/ncs/v3.4.0/zephyr/dts/arm'
+     - 'C:/ncs/v3.4.0/zephyr/dts/arc'
+     - 'C:/ncs/v3.4.0/zephyr/dts'
+  kconfig:
+    files:
+     - 'C:/ncs/v3.4.0/zephyr/boards/nordic/nrf52840dongle/nrf52840dongle_nrf52840_defconfig'
+     - 'C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/prj.conf'
+     - 'C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/Pluto-nRF52840-Dongle-Connect/zephyr/.config.sysbuild'
+    user-files:
+     - 'C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/prj.conf'
+  toolchain:
+    name: 'zephyr'
+    path: 'C:/ncs/toolchains/dcbdc366a1/opt/zephyr-sdk'
+  vendor-specific:
+    nordic:
+      svdfile: 'C:/ncs/v3.4.0/modules/hal/nordic/nrfx/bsp/stable/mdk/nrf52840.svd'
+  zephyr:
+    version: '4.4.0'
+    zephyr-base: 'C:/ncs/v3.4.0/zephyr'
+version: '0.1.0'

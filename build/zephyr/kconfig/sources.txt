@@ -1,8 +1,8 @@
-C:\Users\Public\Documents\Pluto_Calibration\build\Kconfig\Kconfig.sysbuild.modules
-C:\Users\Public\Documents\Pluto_Calibration\build\Kconfig\boards\Kconfig.nrf52840dongle
-C:\Users\Public\Documents\Pluto_Calibration\build\Kconfig\boards\Kconfig.sysbuild
-C:\Users\Public\Documents\Pluto_Calibration\build\Kconfig\soc\Kconfig.soc
-C:\Users\Public\Documents\Pluto_Calibration\build\Kconfig\soc\Kconfig.sysbuild
+C:\Users\Public\Documents\Pluto-nRF52840-Dongle-Connect\build\Kconfig\Kconfig.sysbuild.modules
+C:\Users\Public\Documents\Pluto-nRF52840-Dongle-Connect\build\Kconfig\boards\Kconfig.nrf52840dongle
+C:\Users\Public\Documents\Pluto-nRF52840-Dongle-Connect\build\Kconfig\boards\Kconfig.sysbuild
+C:\Users\Public\Documents\Pluto-nRF52840-Dongle-Connect\build\Kconfig\soc\Kconfig.soc
+C:\Users\Public\Documents\Pluto-nRF52840-Dongle-Connect\build\Kconfig\soc\Kconfig.sysbuild
 C:\ncs\v3.4.0\nrf\soc\nordic\Kconfig.soc
 C:\ncs\v3.4.0\nrf\soc\nordic\Kconfig.sysbuild
 C:\ncs\v3.4.0\nrf\soc\nordic\common\vpr\Kconfig.sysbuild

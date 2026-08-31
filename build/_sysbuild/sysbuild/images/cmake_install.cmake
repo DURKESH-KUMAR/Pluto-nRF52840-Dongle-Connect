@@ -34,37 +34,37 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/bootloader/cmake_install.cmake")
+  include("C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/bootloader/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/firmware_loader/cmake_install.cmake")
+  include("C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/firmware_loader/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/Public/Documents/Pluto_Calibration/build/modules/nrf/cmake_install.cmake")
+  include("C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/modules/nrf/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/Public/Documents/Pluto_Calibration/build/modules/mcuboot/cmake_install.cmake")
+  include("C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/modules/mcuboot/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/boards/cmake_install.cmake")
+  include("C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/boards/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/soc/cmake_install.cmake")
+  include("C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/soc/cmake_install.cmake")
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/Public/Documents/Pluto_Calibration/build/_sysbuild/sysbuild/images/install_local_manifest.txt"
+  file(WRITE "C:/Users/Public/Documents/Pluto-nRF52840-Dongle-Connect/build/_sysbuild/sysbuild/images/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
